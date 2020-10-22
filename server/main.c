@@ -4,6 +4,7 @@
 #include <pthread.h> /* include para usar threads */
 
 #include "server.h"
+#include "tank.h"
 
 #define clear() printf("\033[H\033[J")
 
@@ -16,11 +17,29 @@ int main(int argc, char *argv[]) {
 	pthread_t tid; 
 	int server_port;
 
+	int _tankMax;
+
 	server_port = atoi(argv[1]);
 
 	/* Inicia thread do Server */
 	pthread_create(&tid, NULL, Server, &server_port);
 
+	/* Espera pelo setup do Max Value */
+	while(getCommandCode() != 5){
+		_tankMax = getCommandValue();
+		clear();
+		printf("Waiting for Max Value setup...\n");
+		usleep(20000);
+	}
+
+	/* Espera pelo start */
+	while(getCommandCode() != 6){
+		clear();
+		printf("Ready! Waiting for start...\n");
+		usleep(20000);
+	}
+
+	printf("Starting tank with Max flow output = %d \n", _tankMax);
 	/* Inicia thread dp Tanque */
 	pthread_create(&tid, NULL, Tank, &command_code);
 	/* Inicia thread gráficos */

@@ -7,13 +7,12 @@
 #include <netinet/in.h>
 #include <pthread.h> /* include para usar threads */
 
+#include "decoder.h"
+
 #define BUFFSIZE 32
 
 #define clear() printf("\033[H\033[J")
 
-/* Adicionar thread de controle */
-
-/* Adicionar thread de exibição gráfica */
 
 void Die(char *mess){
 	perror(mess); exit(1); 
@@ -24,14 +23,34 @@ void *ControlGraph(){
 
 }
 
+int _serverAnswerCode;
+int _serverAnswerValue;
+
+Command getAnswer(){
+	Command serverAnswer;
+
+	serverAnswer.code = _serverAnswerCode;
+	serverAnswer.value = _serverAnswerValue; 
+
+	return serverAnswer;
+}
+
 void myClient(char serverIP[10], char message[BUFFSIZE], char serverPort[10]){
-	printf("my  client test: %s, %s, %s\n", serverIP, serverPort, message);
+	// printf("my  client test: %s, %s, %s\n", serverIP, serverPort, message);
 
 	int sock;
 	struct sockaddr_in echoserver;
 	char buffer[BUFFSIZE];
 	unsigned int echolen;
 	int received = 0;
+
+	/* limpa o buffer */
+	int i;
+	for(i = 0; i < BUFFSIZE; i++){
+		buffer[i] = 0;
+	}
+
+	Command serverAnswer;
 
 	/* Create the TCP socket */
 	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
@@ -54,7 +73,7 @@ void myClient(char serverIP[10], char message[BUFFSIZE], char serverPort[10]){
 		Die("Mismatch in number of sent bytes");
 	}
 	/* Receive the word back from the server */
-	fprintf(stdout, "Received: ");
+	//fprintf(stdout, "Received: ");
 	while (received < echolen){
 		int bytes = 0;
 		if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) < 1){
@@ -62,12 +81,18 @@ void myClient(char serverIP[10], char message[BUFFSIZE], char serverPort[10]){
 		}
 		received += bytes;
 		buffer[bytes] = '\0';        /* Assure null terminated string */
-		fprintf(stdout, buffer);
+		//fprintf(stdout, buffer);
 	}
 
+	serverAnswer = getClientCommand(buffer);
+	printf("Command code: %d, Value: %d\n", serverAnswer.code, serverAnswer.value);
+
+	printf("ok!\n");
+	_serverAnswerCode = serverAnswer.code;
+	_serverAnswerValue = serverAnswer.value;
+
 	// "wrapup"
-	fprintf(stdout, "\n");
+	//fprintf(stdout, "\n");
 	close(sock);
 
 }
-

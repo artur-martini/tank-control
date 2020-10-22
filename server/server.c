@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
-#include "reader.h"
+#include "decoder.h"
 #include "data_types.h"
 
 #define MAXPENDING 5 /* max connection requests */
@@ -53,12 +53,18 @@ void HandleClient(int sock){
 		/* Send back received data */
 		char str[15];
 
+		/* limpa char str */
+		int i;
+		for(i = 0; i < 15; i++){
+			str[i] = 0;
+		}
+
 		/* seleciona resposta para o cliente */
 		switch(_command_code){
 			case 0:
-				snprintf(str, sizeof str, "%s", "Err!"); break;
+				snprintf(str, sizeof str, "%s%s", "Err!","\0"); break;
 			case 1:
-				snprintf(str, sizeof str, "%s%d%s", "Open#", _command_value, "!"); break;
+				snprintf(str, sizeof str, "%s%d%s%s", "Open#", _command_value, "!","\0"); break;
 			case 2:
 				snprintf(str, sizeof str, "%s%d%s", "Close#", _command_value, "!"); break;
 			case 3:
@@ -68,7 +74,7 @@ void HandleClient(int sock){
 			case 5:
 				snprintf(str, sizeof str, "%s%d%s", "Max#", _command_value, "!"); break;
 			case 6:
-				snprintf(str, sizeof str, "%s", "Start#OK!"); break;
+				snprintf(str, sizeof str, "%s%s", "Start#OK!", "\0"); break;
 		}
 
 		if(send(sock, str, received, 0) != received){
@@ -135,48 +141,4 @@ void *Server(void *value){
 		fprintf(stdout, "Client connected: %s\n", inet_ntoa(echoclient.sin_addr));
 		HandleClient(clientsock);
 	}
-}
-
-/* Thread para simular a planta tanque */
-void *Tank(void *value){
-	// unsigned long init_time = clock();
-	int command_code = 0;
-	int command_value = 0;
-	int valveAperture = 0;
-
-	while(1){
-		int *num = (int *) value;
-
-		// TODO: Adicionar uma 'MUTEX' com essas variáveis
-		command_code = getCommandCode();
-		command_value = getCommandValue();
-
-		printf("command code: %d, value: %d\n", command_code, command_value);
-
-		/* printa o comando recebido do controle no client */
-
-		/* Ajuste do tempo de loop da planta, deve ser 10 ms */
-		// unsigned long current_time = clock();
-		// printf("%ld\n", current_time-init_time);
-		// usleep(10000-(current_time-init_time));
-		
-		if(command_code == 1){
-			level ++;
-		}
-		else if(command_code == 2){
-			level --;
-		}
-
-		if(level >= 100){
-			level = 100;
-		}
-		else if(level <= 0){
-			level = 0;
-		}
-		
-		printf("Tank, level:%d\n", level);
-		usleep(1000000);
-	}
-
-	// usleep(10);
 }

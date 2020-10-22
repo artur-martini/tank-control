@@ -10,4 +10,8 @@ void *Server(void *value);
 
 void *Tank(void *value);
 
+int getCommandCode();
+
+int getCommandValue();
+
 #endif

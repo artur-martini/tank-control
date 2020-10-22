@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "reader.h"
+#include "decoder.h"
 #include "data_types.h"
 
 Command getClientCommand(char buffer[BUFFSIZE]){
