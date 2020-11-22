@@ -1,8 +1,65 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "server.h"
+#include "data_types.h"
 
+double delta = 0;
+
+double updateInput(double dT, double inAngle, Command command){
+	if(command.code == 1){ // command to open input valve 
+		delta += command.value;
+	}
+	else if(command.code == 2){ // command to close input valve
+		delta -= command.value;
+	}
+
+	if(delta > 0){
+		if(delta < 0.01*dT){
+			inAngle += delta;
+			delta = 0;
+		}
+		else{
+			inAngle += 0.01*dT;
+			delta -= 0.01*dT;
+		}
+	}
+	else if(delta < 0){
+		if(delta > -0.01*dT){
+			inAngle += delta;
+			delta = 0;
+		}
+		else{
+			inAngle += -0.02*dT;
+			delta += 0.01*dT;
+		}
+	}
+}
+
+double updateOutput(double T){
+	if(T <= 0){
+		return 50;
+	}
+	else if(T < 20000){
+		return (50+T/400);
+	}
+	else if(T < 30000){
+		return (100);
+	}
+	else if(T < 50000){
+		return (100-(T-30000)/250);
+	}
+	else if(T < 70000){
+		return (20+(T-50000)/1000);
+	}
+	else if(T < 100000){
+		return (40+20*cos((T-70000)*2*M_PI/10000));
+	}
+	else{
+		return 100;
+	}
+}
 
 /* Thread para simular a planta tanque */
 void *Tank(void *value){

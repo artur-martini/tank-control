@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	/* Espera pelo start */
 	while(getCommandCode() != 6){
 		clear();
-		printf("Ready! Waiting for start...\n");
+		printf("Server ready! Tank Value set to %d. Waiting for Start.\n", _tankMax);
 		usleep(20000);
 	}
 
