@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 	pthread_t tid; 
 	int server_port;
 
-	int _tankMax;
+	int _tankMax = atoi(argv[2]);
 
 	server_port = atoi(argv[1]);
 
@@ -25,12 +25,12 @@ int main(int argc, char *argv[]) {
 	pthread_create(&tid, NULL, Server, &server_port);
 
 	/* Espera pelo setup do Max Value */
-	while(getCommandCode() != 5){
-		_tankMax = getCommandValue();
-		clear();
-		printf("Waiting for Max Value setup...\n");
-		usleep(20000);
-	}
+	// while(getCommandCode() != 5){
+	// 	_tankMax = getCommandValue();
+	// 	clear();
+	// 	printf("Waiting for Max Value setup...\n");
+	// 	usleep(20000);
+	// }
 
 	/* Espera pelo start */
 	while(getCommandCode() != 6){
