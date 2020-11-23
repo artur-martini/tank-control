@@ -5,3 +5,4 @@ Server: server/main.c
 
 Client: client/main.c 
 	gcc -o Client client/client.c client/decoder.c client/control.c client/main.c -pthread
+	

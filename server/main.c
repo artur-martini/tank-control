@@ -17,29 +17,29 @@ int main(int argc, char *argv[]) {
 	pthread_t tid; 
 	int server_port;
 
-	int _tankMax = atoi(argv[2]);
+	int _tankMaxOuput = atoi(argv[2]);
 
 	server_port = atoi(argv[1]);
 
 	/* Inicia thread do Server */
 	pthread_create(&tid, NULL, Server, &server_port);
 
-	/* Espera pelo setup do Max Value */
+	/* Espera pelo start */
+	while(getCommandCode() != 6){
+		clear();
+		printf("Server ready! Max output set to: %d. Waiting for Start.\n", _tankMaxOuput);
+		usleep(20000);
+	}
+
+	// /* Espera pelo setup do Max Value */
 	// while(getCommandCode() != 5){
-	// 	_tankMax = getCommandValue();
+	// 	_tankMaxOuput = getCommandValue();
 	// 	clear();
 	// 	printf("Waiting for Max Value setup...\n");
 	// 	usleep(20000);
 	// }
 
-	/* Espera pelo start */
-	while(getCommandCode() != 6){
-		clear();
-		printf("Server ready! Tank Value set to %d. Waiting for Start.\n", _tankMax);
-		usleep(20000);
-	}
-
-	printf("Starting tank with Max flow output = %d \n", _tankMax);
+	printf("Starting tank!");
 	/* Inicia thread dp Tanque */
 	pthread_create(&tid, NULL, Tank, &command_code);
 	/* Inicia thread gráficos */

@@ -35,7 +35,7 @@ Command getAnswer(){
 	return serverAnswer;
 }
 
-void myClient(char serverIP[10], char message[BUFFSIZE], char serverPort[10]){
+void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 	// printf("my  client test: %s, %s, %s\n", serverIP, serverPort, message);
 
 	int sock;
@@ -85,9 +85,8 @@ void myClient(char serverIP[10], char message[BUFFSIZE], char serverPort[10]){
 	}
 
 	serverAnswer = getClientCommand(buffer);
-	printf("Command code: %d, Value: %d\n", serverAnswer.code, serverAnswer.value);
+	// printf("Command code: %d, Value: %d\n", serverAnswer.code, serverAnswer.value);
 
-	printf("ok!\n");
 	_serverAnswerCode = serverAnswer.code;
 	_serverAnswerValue = serverAnswer.value;
 

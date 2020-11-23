@@ -2,6 +2,6 @@
 #define CONTROL_H
 
 
-void *Control(void *value);
+void *Controller(void *value);
 
 #endif
