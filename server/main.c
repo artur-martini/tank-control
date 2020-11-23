@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
 	/* Espera pelo start */
 	while(getCommandCode() != 6){
-		clear();
+		//clear();
 		printf("Server ready! Max output set to: %d. Waiting for Start.\n", _tankMaxOuput);
 		usleep(20000);
 	}
@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
 	
 	while(1){
 
-        clear();
-        usleep(10000);
+        //clear();
+        sleep(1);
 		
 		// usleep(1000000);
 		// printf("ainda nao estou preso num while :)\n");

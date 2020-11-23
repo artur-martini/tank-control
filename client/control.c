@@ -5,30 +5,28 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h> 
 
 #include "client.h"
 
-struct ServerInfo{ 
-   char *Ip;
-   char *Port;
-   int Setpoint; 
-};
+void *Controller(void *value){
 
-void *Controller(void *values){
-
-	char *Ip;
-	char *Port;
-	int SetPoint;
-	struct ServerInfo *controlServerInfo;
+	// char *Ip;
+	// char *Port;
+	int *setpoint = (int *) value;
+	// struct ServerInfo *controlServerInfo;
 	
-	controlServerInfo = (struct ServerInfo*) values;
+	// controlServerInfo = (struct ServerInfo*)values;
 
-	Ip = controlServerInfo->Ip;
-	SetPoint = controlServerInfo->Setpoint;
+	// Ip = controlServerInfo->Ip;
+	// SetPoint = controlServerInfo->Setpoint;
+	printf("im here!\n");
 
+	printf("SetPoint = %d\n", *setpoint);
+	
 
-	printf("Ip = %s; Port = %s; SetPoint = %d\n", Ip, Port, SetPoint);
+	// printf("debuging this shit %d\n", ((struct ServerInfo*)values)->Setpoint);
 
 	// printf("control started!\n");
 	// int P = 0;
@@ -57,4 +55,5 @@ void *Controller(void *values){
 
 	/* send control signal */	
 	}
+	return NULL;
 }

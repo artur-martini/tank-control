@@ -11,6 +11,6 @@ typedef struct{
    int value; 
 }Command;
 
-Command getClientCommand(char buffer[BUFFSIZE]);
+Command getServerAnswer(char *buffer);
 
 #endif

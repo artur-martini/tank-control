@@ -6,7 +6,7 @@
 
 
 
-Command getClientCommand(char buffer[BUFFSIZE]){
+Command getServerAnswer(char *buffer){
     Command server_command;
 	server_command.code = 0;
     server_command.value = 0;
@@ -25,15 +25,17 @@ Command getClientCommand(char buffer[BUFFSIZE]){
 
 	/* copia mensagem até encontrar um "!"*/
 	i = 0;
-	while(buffer[i] != '!'){
+	while(buffer[i] != '\0'){
 		message[i] = buffer[i];
 		i++;
 	}
-	message[i] = buffer[i]; /* copia o "!" para a mensagem também */
+	//message[i] = '!';
+	// message[i] = buffer[i]; /* copia o "!" para a mensagem também */
 	
 	/* procura o comando na mensagem*/
 	// printf("Client Message = %s \n", message);
-	
+	printf("Server answer-> %s, message -> %s\n", buffer, message);
+
 	i = 0;
 	j = 0;
 	if (strstr(message, "Open") != NULL){
@@ -84,7 +86,7 @@ Command getClientCommand(char buffer[BUFFSIZE]){
 		}
 		server_command.value = atoi(message_value);
 	}
-	else if(strstr(message, "Start") != NULL){
+	else if(strstr(message, "Start#OK!") != NULL){
 		server_command.code = 6;
 		server_command.value = -1;	
 	}
@@ -107,7 +109,7 @@ Command getClientCommand(char buffer[BUFFSIZE]){
 	1 - OpenValve, sintaxe: OpenValve#<value>!
 	2 - CloseVale, sintaxe: CloseValve#<value>!
 	3 - GetLevel, sintaxe: GetLevel!
-	4 - CommTest, sintaxe: Commtest!
+	4 - CommTest, sintaxe: CommTest!
 	5 - SetMax, sintaxe: SetMax#<value>!
 	6 - Start, sintaxe: Start!	
 	

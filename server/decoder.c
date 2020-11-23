@@ -31,7 +31,7 @@ Command getClientCommand(char buffer[BUFFSIZE]){
 	message[i] = buffer[i]; /* copia o "!" para a mensagem também */
 	
 	/* procura o comando na mensagem*/
-	printf("Client Message = %s \n", message);
+	printf("Client Message = %s \n", buffer);
 	
 	i = 0;
 	j = 0;

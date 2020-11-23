@@ -68,7 +68,7 @@ void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 		Die("Failed to connect with server");
 	}
 
-	echolen = strlen(message);
+	echolen = 10;//strlen(message);
 	if (send(sock, message, echolen, 0) != echolen){
 		Die("Mismatch in number of sent bytes");
 	}
@@ -83,8 +83,8 @@ void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 		buffer[bytes] = '\0';        /* Assure null terminated string */
 		//fprintf(stdout, buffer);
 	}
-
-	serverAnswer = getClientCommand(buffer);
+	printf("server answer--> %s \n", buffer);
+	serverAnswer = getServerAnswer(buffer);
 	// printf("Command code: %d, Value: %d\n", serverAnswer.code, serverAnswer.value);
 
 	_serverAnswerCode = serverAnswer.code;

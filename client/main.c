@@ -8,35 +8,86 @@
 #include <pthread.h> /* include para usar threads */
 
 #include "client.h"
-#include "control.h"
+// #include "control.h"
 
 #define clear() printf("\033[H\033[J")
+#define SLEEP_CONTROLLER 50000// em us
 
 struct ServerInfo{
-   char *Ip;
-   char *Port;
+   char* Ip;
+   char* Port;
    int Setpoint; 
 };
 
+int TankLevel = 50;
+
+void *Controller(void *input){
+	
+
+	struct ServerInfo myServerInfo;
+
+	myServerInfo.Ip = ((struct ServerInfo*)input)->Ip;
+	myServerInfo.Port = ((struct ServerInfo*)input)->Port;
+	myServerInfo.Setpoint = ((struct ServerInfo*)input)->Setpoint;
+
+	printf("[INFO] Controller running\n");
+	
+	// int *setpoint = (int *) value;
+
+	while(1){
+		printf("[INFO] Settings: %s, %s, %d\n", myServerInfo.Ip, myServerInfo.Port, myServerInfo.Setpoint);
+		
+		// get level
+		myClient(myServerInfo.Ip, myServerInfo.Port, "GetLevel!");
+
+		
+		
+		usleep(SLEEP_CONTROLLER);
+	}
+
+}
+
+// Referência de comandos:
+//
+//  1 - OpenValve, sintaxe: OpenValve#<value>!
+// 	2 - CloseVale, sintaxe: CloseValve#<value>!
+// 	3 - GetLevel, sintaxe: GetLevel!
+// 	4 - CommTest, sintaxe: CommTest!
+// 	5 - SetMax, sintaxe: SetMax#<value>!
+// 	6 - Start, sintaxe: Start!	
+
 int main(int argc, char *argv[]){
+	clear();
 
 	char ch;
 
-	struct ServerInfo *myServerInfo;
-	myServerInfo = malloc(sizeof(struct ServerInfo));
+	struct ServerInfo *myServerInfo = (struct ServerInfo *)malloc(sizeof(struct ServerInfo));
 
-	(*myServerInfo).Ip = argv[1];
-	(*myServerInfo).Port = argv[2];
-	(*myServerInfo).Setpoint = atoi(argv[3]);
+	myServerInfo->Ip = argv[1];
+	myServerInfo->Port = argv[2];
+	myServerInfo->Setpoint = atoi(argv[3]);
+
+	// max setpoint = 100
+	if(myServerInfo->Setpoint > 100){
+		myServerInfo->Setpoint = 100;
+	}
+	else if(myServerInfo->Setpoint < 0){
+		myServerInfo->Setpoint = 0;
+	}
 
 	pthread_t tid;
+
+	// (*myServerInfo).Ip = argv[1];
+	// (*myServerInfo).Port = argv[2];
+	// (*myServerInfo).Setpoint = atoi(argv[3]);
+
+	printf("DEBUG: server info %s %s %d\n", myServerInfo->Ip, myServerInfo->Port, myServerInfo->Setpoint);
 
 	if (argc != 4){
 		fprintf(stderr, "USAGE: TCPecho <server_ip> <word> <port>\n");
 		exit(1);
 	}
 
-	clear();
 	printf("Level Setpoint = %d\n", (*myServerInfo).Setpoint);
 
 	// check communication
@@ -44,14 +95,19 @@ int main(int argc, char *argv[]){
 
 	Command serverAnswer = getAnswer();
 
+	printf("server answer = %d %d\n", serverAnswer.code, serverAnswer.value);
+
 	if(serverAnswer.code == 4){ // comm ok! start process
 		printf("Press ENTER key to Start!\n");
 		scanf("%c",&ch);
 		
 		myClient((*myServerInfo).Ip, (*myServerInfo).Port, "Start!");
 
+		printf("started!");
 		// inicia o controlador
-		pthread_create(&tid, NULL, Controller, (void *)&myServerInfo);
+		pthread_create(&tid, NULL, Controller, (void *)myServerInfo);
+		pthread_join(tid, NULL);
+		
 
 		while(1){
 			printf("control running...\n");
@@ -99,5 +155,5 @@ int main(int argc, char *argv[]){
 
     
 	
-	// return 0;
+	return 0;
 }

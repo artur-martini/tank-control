@@ -51,12 +51,12 @@ void HandleClient(int sock){
 	/* Send bytes and check for more incoming data in loop */
 	while (received > 0){
 		/* Send back received data */
-		char str[15];
+		char str[32];
 
 		/* limpa char str */
 		int i;
-		for(i = 0; i < 15; i++){
-			str[i] = 0;
+		for(i = 0; i < 32; i++){
+			str[i] = '\0';
 		}
 
 		/* seleciona resposta para o cliente */
@@ -66,16 +66,18 @@ void HandleClient(int sock){
 			case 1:
 				snprintf(str, sizeof str, "%s%d%s%s", "Open#", _command_value, "!","\0"); break;
 			case 2:
-				snprintf(str, sizeof str, "%s%d%s", "Close#", _command_value, "!"); break;
+				snprintf(str, sizeof str, "%s%d%s", "Close#", _command_value, "!\0"); break;
 			case 3:
-				snprintf(str, sizeof str, "%s%d%s", "Level#", level, "!"); break;
+				snprintf(str, sizeof str, "%s%d%s", "Level#", level, "!\0"); break;
 			case 4: 
-				snprintf(str, sizeof str, "%s", "Comm#OK!"); break;
+				snprintf(str, sizeof str, "%s", "Comm#OK!\0"); break;
 			case 5:
-				snprintf(str, sizeof str, "%s%d%s", "Max#", _command_value, "!"); break;
+				snprintf(str, sizeof str, "%s%d%s", "Max#", _command_value, "!\0"); break;
 			case 6:
 				snprintf(str, sizeof str, "%s%s", "Start#OK!", "\0"); break;
 		}
+
+		printf("sending answer to client %s\n", str);
 
 		if(send(sock, str, received, 0) != received){
 			Die("Failed to send bytes to client");
