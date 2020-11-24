@@ -14,13 +14,13 @@ make
 
 Servidor:
 
-./Server <port> <max_output> 
+./Server _port_ _maxOutput_ 
 
 exemplo de servidor na porta 5010 com 40% de abertura máxima: ./Server 5010 40
 
 Cliente: 
 
-./Client <ip> <port> <reference>
+./Client _ip_ _port_ _reference_
 
 exemplo de cliente ip local, porta 5010 e referencia de nível igual a 42%
 
