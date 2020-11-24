@@ -5,6 +5,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <time.h>
+#include <math.h>
 
 #include <pthread.h> /* include para usar threads */
 
@@ -16,9 +18,13 @@
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-Command clientCommands;
+Command clientCommands; 
 
-int TankLevel = 50;
+double TankLevel = 40.0; // initial condition
+double inValve = 50; // initial condition
+double outValve = 0;
+int outValveMax;
+
 int FLAG_START = 0; // flag to start the tank simulation
 
 #define MAXPENDING 5 /* max connection requests */
@@ -81,7 +87,7 @@ void HandleClient(int sock){
 			case 2:
 				snprintf(str, sizeof str, "%s%d%s", "Close#", clientCommands.value, "!\0"); break;
 			case 3:
-				snprintf(str, sizeof str, "%s%d%s", "Level#", TankLevel, "!\0"); break;
+				snprintf(str, sizeof str, "%s%.3f%s", "Level#", TankLevel, "!\0"); break;
 			case 4: 
 				snprintf(str, sizeof str, "%s", "Comm#OK!\0"); break;
 			case 5:
@@ -145,53 +151,144 @@ void *Server(void *value){
 	}
 }
 
+double delta = 0;
 
-/* Thread para simular a planta tanque */
+double getTime(){
+	struct timespec tempo;
+    clock_gettime(CLOCK_REALTIME, &tempo);
+    return (double)(1000*tempo.tv_sec + tempo.tv_nsec/1000000.0);
+}
+
+double updateInput(double dT, double inAngle, Command command){
+	if(command.code == 1){ // command to open input valve 
+		delta += command.value;
+	}
+	else if(command.code == 2){ // command to close input valve
+		delta -= command.value;
+	}
+
+	if(delta > 0){
+		if(delta < 0.01*dT){
+			inAngle += delta;
+			delta = 0;
+			if(inAngle > 100)inAngle = 100;
+			
+		}
+		else{
+			inAngle += 0.01*dT;
+			delta -= 0.01*dT;
+			if(inAngle > 100)inAngle = 100;
+		}
+	}
+	else if(delta < 0){
+		if(delta > -0.01*dT){
+			inAngle += delta;
+			delta = 0;
+			if(inAngle < 0)inAngle = 0;
+		}
+		else{
+			inAngle += -0.02*dT;
+			delta += 0.01*dT;
+			if(inAngle < 0)inAngle = 0;
+		}
+	}
+	printf("[INFO] VALVE UPDATE , code %d, delta %f, angle%f\n", command.code, delta, inAngle);
+	return inAngle;
+}
+
+double updateOutput(double T){
+	if(T <= 0){
+		return 50;
+	}
+	else if(T < 20000){
+		return (50+T/400);
+	}
+	else if(T < 30000){
+		return (100);
+	}
+	else if(T < 50000){
+		return (100-(T-30000)/250);
+	}
+	else if(T < 70000){
+		return (20+(T-50000)/1000);
+	}
+	else if(T < 100000){
+		return (40+20*cos((T-70000)*2*M_PI/10000));
+	}
+	else{
+		return 100;
+	}
+}
+
 void *Tank(void* unused){
     
 	Command tankCommands;
 
-	// unsigned long init_time = clock();
-	// int command_code = 0;
-	// int command_value = 0;
-	int valveAperture = 0;
+	double init_time, currente_time, pass_time, dT = 10, total_time = 0;
+	double exec_time;
+	double inFlux, outFlux;
+	double delta = 0;
+
+	// inFlux = 1*sin((M_PI/2)*(inValve/100));
+	// outFlux = (outValve/100)*((TankLevel/1.25)+0.2)*sin((M_PI/2)*(outValve/100));
+
+	// TankLevel = TankLevel + 0.00002*dT*(inFlux-outFlux);
 
 	while(1){
-		
-
+		clear();
+		init_time = getTime();
 		// TODO: Adicionar uma 'MUTEX' com essas variáveis
-		
-
 		tankCommands.code = clientCommands.code;
 		tankCommands.value = clientCommands.value;
 		
-		
-
 		printf("[TANK INFO] Command code: %d, value: %d\n", clientCommands.code, clientCommands.value);
+		printf("[INFO] Tank level = %.3f\n", TankLevel);
 
-		/* printa o comando recebido do controle no client */
+		if(tankCommands.code == 1){// open valve
+			delta += tankCommands.value;
+			if(delta > 100){
+				delta = 100;
+			}
+		}
+		else if(tankCommands.code == 2){// close valve
+			delta -=tankCommands.value;
+			if(delta < -100){
+				delta = -100;
+			}
+		}
 
-		/* Ajuste do tempo de loop da planta, deve ser 10 ms */
-		// unsigned long current_time = clock();
-		// printf("%ld\n", current_time-init_time);
-		// usleep(10000-(current_time-init_time));
-		
-		if(clientCommands.code == 1){
-			TankLevel ++;
-		}
-		else if(clientCommands.code == 2){
-			TankLevel --;
-		}
+		inValve = updateInput(dT, inValve, tankCommands);
+		outValve = updateOutput(total_time);
 
-		if(TankLevel >= 100){
-			TankLevel = 100;
-		}
-		else if(TankLevel <= 0){
+		inFlux = 1*sin((M_PI/2)*(inValve/100));
+		outFlux = (outValveMax/100.0)*(TankLevel/125.0+0.2)*sin(M_PI/2*outValve/100);
+
+		printf("[INFO] inFLux %f, outFlux %f\n", inFlux, outFlux);
+
+		TankLevel = TankLevel + 0.00002*dT*(inFlux-outFlux);
+		if(TankLevel < 0){
 			TankLevel = 0;
 		}
+		else if(TankLevel > 100){
+			TankLevel = 100;
+		}
 		
-		printf("Tank, level:%d\n", TankLevel);
-		usleep(100000);
+		
+		
+
+		tankCommands.code = 0;
+
+		printf("[VALVES] in: %.3f, out: %0.3f\n", inValve, outValve);
+
+		exec_time = getTime() - init_time;
+		printf("[TIME] init: %.3f, current %.3f, dT: %-.3f, total time %.3f\n", init_time, currente_time, dT, total_time);
+		
+
+		// silumation time step
+		if(exec_time < 10000.0){
+			usleep(10000.0 - exec_time);
+		}
+		total_time += dT;
 	}
 
 	// usleep(10);
@@ -203,15 +300,15 @@ int main(int argc, char *argv[]) {
 	
 	int server_port;
 
-	int _tankMaxOuput = atoi(argv[2]);
-
+	outValve = atoi(argv[2]);
+	outValveMax = outValve;
 	server_port = atoi(argv[1]);
 
 	/* Inicia thread do Server */
 	pthread_create(&tid, NULL, Server, &server_port);
 	
 	clear();
-	printf("Server ready! Max output set to: %d. Waiting for Start.\n", _tankMaxOuput);
+	printf("Server ready! Max output set to: %.3f. Waiting for Start.\n", outValve);
 	/* Espera pelo start */
 	while(FLAG_START == 0){
 		usleep(50000);
@@ -224,11 +321,11 @@ int main(int argc, char *argv[]) {
 	pthread_create(&tid, NULL, Tank, NULL);
 
 	/* Inicia thread gráficos */
-	// TODO: Janela gráfica
+	// TODO: Criar a thread do gráfico
 	
 	while(1){
 		clear();
-		printf("[INFO] Client command code: %d, value: %d; Tank level: %d\n", clientCommands.code, clientCommands.value, TankLevel);
+		printf("[INFO] Client command code: %d, value: %d; Tank level: %f\n", clientCommands.code, clientCommands.value, TankLevel);
         //clear();
         usleep(500000);
 		

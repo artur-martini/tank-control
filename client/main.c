@@ -25,6 +25,10 @@ void *Controller(void *input){
 	
 	Command serverAnswer;
 
+	char message[32];
+	int K = 5;
+	int valveValueRef = 0;
+
 	struct ServerInfo myServerInfo;
 
 	myServerInfo.Ip = ((struct ServerInfo*)input)->Ip;
@@ -44,18 +48,35 @@ void *Controller(void *input){
 		}
 		printf("[INFO] Tank Level = %d\n", TankLevel);
 
+
+		//TODO: tirar esse teste e implementar um controlador PID
 		// teste com controle bang bang
+		// snprintf(str, sizeof str, "%s%d%s%s", "Open#", clientCommands.value, "!","\0"); break;
 		if(TankLevel < myServerInfo.Setpoint){
-			serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, "OpenValve#10!");
-			printf("[INFO] Client message: OpenValve10\n");
+			valveValueRef = K*(myServerInfo.Setpoint - TankLevel); // sinal de controle
+
+			if(valveValueRef > 100){
+				valveValueRef = 100;
+			}
+
+			snprintf(message, sizeof message, "%s%d%s", "OpenValve#", valveValueRef, "!\0");
+			serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, message);
+			printf("[INFO] Client message: %s\n", message);
 		}
 		else if(TankLevel > myServerInfo.Setpoint){
-			serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, "CloseValve#10!");
-			printf("[INFO] Client message: CloseValve10\n");
+			valveValueRef = abs(K*(myServerInfo.Setpoint - TankLevel)); // sinal de controle
+			
+			if(valveValueRef > 100){
+				valveValueRef = 100;
+			}
+
+			snprintf(message, sizeof message, "%s%d%s", "CloseValve#", valveValueRef, "!\0");
+			serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, message);
+			printf("[INFO] Client message: %s\n", message);
 		}
 
 		printf("[INFO] Server answer: code=%d value=%d\n", serverAnswer.code, serverAnswer.value);
-		
+
 		usleep(500000);
 	}
 
@@ -122,6 +143,8 @@ int main(int argc, char *argv[]){
 		// inicia o controlador
 		pthread_create(&tid, NULL, Controller, (void *)myServerInfo);
 		pthread_join(tid, NULL);
+
+		// TODO: criar a thread do gráfico
 		
 		while(1){
 			printf("control running...\n");

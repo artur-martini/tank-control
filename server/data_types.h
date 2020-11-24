@@ -7,6 +7,6 @@ typedef struct{
    int value; 
 }Command;
 
-int TankLevel;
+double TankLevel;
 
 #endif
