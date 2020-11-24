@@ -31,7 +31,7 @@ Command getClientCommand(char buffer[BUFFSIZE]){
 	message[i] = buffer[i]; /* copia o "!" para a mensagem também */
 	
 	/* procura o comando na mensagem*/
-	printf("Client Message = %s \n", buffer);
+	// printf("Client Message = %s \n", buffer);
 	
 	i = 0;
 	j = 0;
@@ -91,7 +91,7 @@ Command getClientCommand(char buffer[BUFFSIZE]){
 		server_command.value = 0;
 	}
 
-	printf("Command code: %d, Value: %d\n", server_command.code, server_command.value);
+	// printf("Command code: %d, Value: %d\n", server_command.code, server_command.value);
 
 	/* lista de comandos que o servidor deve reconhecer
 	

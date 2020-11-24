@@ -35,7 +35,7 @@ Command getAnswer(){
 	return serverAnswer;
 }
 
-void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
+Command myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 	// printf("my  client test: %s, %s, %s\n", serverIP, serverPort, message);
 
 	int sock;
@@ -68,7 +68,7 @@ void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 		Die("Failed to connect with server");
 	}
 
-	echolen = 10;//strlen(message);
+	echolen = 14;//strlen(message);
 	if (send(sock, message, echolen, 0) != echolen){
 		Die("Mismatch in number of sent bytes");
 	}
@@ -83,7 +83,7 @@ void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 		buffer[bytes] = '\0';        /* Assure null terminated string */
 		//fprintf(stdout, buffer);
 	}
-	printf("server answer--> %s \n", buffer);
+	
 	serverAnswer = getServerAnswer(buffer);
 	// printf("Command code: %d, Value: %d\n", serverAnswer.code, serverAnswer.value);
 
@@ -93,5 +93,7 @@ void myClient(char serverIP[10], char serverPort[10], char message[BUFFSIZE]){
 	// "wrapup"
 	//fprintf(stdout, "\n");
 	close(sock);
+
+	return serverAnswer;
 
 }

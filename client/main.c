@@ -23,6 +23,7 @@ int TankLevel = 50;
 
 void *Controller(void *input){
 	
+	Command serverAnswer;
 
 	struct ServerInfo myServerInfo;
 
@@ -31,18 +32,31 @@ void *Controller(void *input){
 	myServerInfo.Setpoint = ((struct ServerInfo*)input)->Setpoint;
 
 	printf("[INFO] Controller running\n");
-	
-	// int *setpoint = (int *) value;
 
 	while(1){
+		clear();
 		printf("[INFO] Settings: %s, %s, %d\n", myServerInfo.Ip, myServerInfo.Port, myServerInfo.Setpoint);
 		
 		// get level
-		myClient(myServerInfo.Ip, myServerInfo.Port, "GetLevel!");
+		serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, "GetLevel!");
+		if(serverAnswer.code == 3){
+			TankLevel = serverAnswer.value;
+		}
+		printf("[INFO] Tank Level = %d\n", TankLevel);
 
+		// teste com controle bang bang
+		if(TankLevel < myServerInfo.Setpoint){
+			serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, "OpenValve#10!");
+			printf("[INFO] Client message: OpenValve10\n");
+		}
+		else if(TankLevel > myServerInfo.Setpoint){
+			serverAnswer = myClient(myServerInfo.Ip, myServerInfo.Port, "CloseValve#10!");
+			printf("[INFO] Client message: CloseValve10\n");
+		}
+
+		printf("[INFO] Server answer: code=%d value=%d\n", serverAnswer.code, serverAnswer.value);
 		
-		
-		usleep(SLEEP_CONTROLLER);
+		usleep(500000);
 	}
 
 }
@@ -81,7 +95,8 @@ int main(int argc, char *argv[]){
 	// (*myServerInfo).Port = argv[2];
 	// (*myServerInfo).Setpoint = atoi(argv[3]);
 
-	printf("DEBUG: server info %s %s %d\n", myServerInfo->Ip, myServerInfo->Port, myServerInfo->Setpoint);
+	printf("DEBUG: server info %s %s %d\n", myServerInfo->Ip, 
+		myServerInfo->Port, myServerInfo->Setpoint);
 
 	if (argc != 4){
 		fprintf(stderr, "USAGE: TCPecho <server_ip> <word> <port>\n");
@@ -108,7 +123,6 @@ int main(int argc, char *argv[]){
 		pthread_create(&tid, NULL, Controller, (void *)myServerInfo);
 		pthread_join(tid, NULL);
 		
-
 		while(1){
 			printf("control running...\n");
 			sleep(1);

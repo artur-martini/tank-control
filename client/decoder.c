@@ -33,9 +33,6 @@ Command getServerAnswer(char *buffer){
 	// message[i] = buffer[i]; /* copia o "!" para a mensagem também */
 	
 	/* procura o comando na mensagem*/
-	// printf("Client Message = %s \n", message);
-	printf("Server answer-> %s, message -> %s\n", buffer, message);
-
 	i = 0;
 	j = 0;
 	if (strstr(message, "Open") != NULL){

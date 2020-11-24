@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 #include "decoder.h"
 #include "data_types.h"
@@ -17,7 +17,6 @@
 
 int _command_code = 0;
 int _command_value = 0;
-int level = 50;
 
 void Die(char *mess) {perror(mess); exit(1); }
 
@@ -36,7 +35,7 @@ void HandleClient(int sock){
     	Die("Failed to receive initial bytes from client");
 	}
 	
-	printf("buffer %s \n", buffer);
+	// printf("buffer %s \n", buffer);
 	Command server_command;
 
 	server_command.code = 0;
@@ -46,7 +45,7 @@ void HandleClient(int sock){
 
 	_command_code = server_command.code;
 	_command_value = server_command.value;
-	printf("==> Update code: %d, value: %d\n", _command_code, _command_value);
+	// printf("==> Update code: %d, value: %d\n", _command_code, _command_value);
 
 	/* Send bytes and check for more incoming data in loop */
 	while (received > 0){
@@ -68,7 +67,7 @@ void HandleClient(int sock){
 			case 2:
 				snprintf(str, sizeof str, "%s%d%s", "Close#", _command_value, "!\0"); break;
 			case 3:
-				snprintf(str, sizeof str, "%s%d%s", "Level#", level, "!\0"); break;
+				snprintf(str, sizeof str, "%s%d%s", "Level#", TankLevel, "!\0"); break;
 			case 4: 
 				snprintf(str, sizeof str, "%s", "Comm#OK!\0"); break;
 			case 5:
@@ -77,7 +76,7 @@ void HandleClient(int sock){
 				snprintf(str, sizeof str, "%s%s", "Start#OK!", "\0"); break;
 		}
 
-		printf("sending answer to client %s\n", str);
+		// printf("sending answer to client %s\n", str);
 
 		if(send(sock, str, received, 0) != received){
 			Die("Failed to send bytes to client");
@@ -140,7 +139,7 @@ void *Server(void *value){
 		if ((clientsock = accept(serversock, (struct sockaddr *) &echoclient, &clientlen)) < 0) {
 			Die("Failed to accept client connection");
 		}
-		fprintf(stdout, "Client connected: %s\n", inet_ntoa(echoclient.sin_addr));
+		// fprintf(stdout, "Client connected: %s\n", inet_ntoa(echoclient.sin_addr));
 		HandleClient(clientsock);
 	}
 }

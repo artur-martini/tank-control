@@ -65,7 +65,7 @@ double updateOutput(double T){
 void *Tank(void *value){
     int _command_code;
     int _command_value;
-    int level;
+    int level = 20;
 
 	// unsigned long init_time = clock();
 	// int command_code = 0;
@@ -79,7 +79,7 @@ void *Tank(void *value){
 		_command_code = getCommandCode();
 		_command_value = getCommandValue();
 
-		printf("command code: %d, value: %d\n", _command_code, _command_value);
+		printf("[TANK INFO] Command code: %d, value: %d\n", _command_code, _command_value);
 
 		/* printa o comando recebido do controle no client */
 
