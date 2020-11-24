@@ -1,6 +1,6 @@
 ### Trabalho Cliente Servidor - Protocolos de Comunicação - A 
 
-Simulação de uma planta tanque em um servidor e controle da planta pelo cliente;
+Simulação de uma planta tanque em um servidor e controle da planta pelo cliente
 
 #### Build
 
